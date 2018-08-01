@@ -1,4 +1,4 @@
-package com.example.wxc.coolweather;
+package com.example.wxc.coolweather.service;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -19,6 +19,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+//后台自动更新天气
 public class AutoUpdateService extends Service {
     public AutoUpdateService() {
     }
@@ -27,8 +28,9 @@ public class AutoUpdateService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         updateWeather();
         updateBingPic();
+        //每一小时唤醒一次cpu,更新天气和背景图片
         AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int anHour = 8 * 60 * 60 * 1000;
+        int anHour = 60 * 60 * 1000;//1小时的毫秒数
         long triggerAtTime = SystemClock.currentThreadTimeMillis() + anHour;
         Intent i = new Intent(this, AutoUpdateService.class);
         PendingIntent pi = PendingIntent.getService(this, 0, i, 0);
@@ -37,11 +39,12 @@ public class AutoUpdateService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    //更新天气信息
     private void updateWeather() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather", null);
         if (weatherString != null) {
-            //有缓存时直接解析天气数据
+            //有缓存时直接解析天气数据,获取到当前城市的天气ID后，从服务器获取信息并存入本地
             Weather weather = Utility.handleWeatherResponse(weatherString);
             final String weatherId = weather.basic.weatherId;
             String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=fcb7df172b6c4100afbfe96618632466";
@@ -65,6 +68,7 @@ public class AutoUpdateService extends Service {
         }
     }
 
+    //更新背景图片
     private void updateBingPic() {
         String requestBingPic = "http://guolin.tech/api/bing_pic";
         HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {

@@ -17,7 +17,9 @@ import org.json.JSONObject;
 import static android.content.ContentValues.TAG;
 
 public class Utility {
-    //省级数据解析
+    /*省级数据解析
+        先将返回的字符串（response）放到一个JSON数组里面，然后数组中的每个数据都是一个JSONObject,最后利用LitPal数据库的set方法存入数据，最后save.
+     */
     public static boolean handleProvinceResponse(String response) {
         if (!TextUtils.isEmpty(response)) {
             try {
@@ -48,7 +50,6 @@ public class Utility {
                     city.setCityCode(cityObject.getInt("id"));
                     city.setProvinceId(provinceId);
                     city.save();
-                    Log.d(TAG, "目前城市" + city.getCityName());
                 }
                 return true;
             } catch (JSONException e) {
@@ -61,7 +62,6 @@ public class Utility {
     public static boolean handleCountyResponse(String response, int cityId) {
         if (!TextUtils.isEmpty(response)) {
             try {
-                Log.d(TAG, "进入服务器查询县的程序");
                 JSONArray allCounties = new JSONArray(response);
                 for(int i=0;i<allCounties.length();i++) {
                     JSONObject countyObject = allCounties.getJSONObject(i);
